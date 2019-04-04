@@ -1,0 +1,23 @@
+
+# I really like this minimalistic zsh theme.
+export ZSH_THEME="refined"
+
+# This is important if you'd like to use TrueColor themes in Neovim
+export NVIM_TUI_ENABLE_TRUE_COLOR=1
+# This makes Neovim your default editor
+export VISUAL=nvim
+export EDITOR="$VISUAL"
+
+# ag (silversearcher-ag) is a faster grep
+# I recommend using it if you have to deal with large codebases
+# Install it by running `sudo apt-get install silversearcher-ag`
+# The variable below makes it a default command to be used by
+# fzf for a file path search
+export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
+
+# A few useful aliases
+alias awk1="awk '{print \$1}'"
+alias awk2="awk '{print \$2}'"
+alias awk3="awk '{print \$3}'"
+alias awk4="awk '{print \$4}'"
+alias kgp="kubectl get pods"

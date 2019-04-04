@@ -1,0 +1,8 @@
+neovim
+jedi
+flake8
+flake8-docstrings
+flake8-isort
+pep8-naming
+pep257
+isort
