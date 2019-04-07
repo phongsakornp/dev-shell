@@ -16,16 +16,7 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     dpkg-reconfigure --frontend=noninteractive locales && \
     update-locale LANG=en_US.UTF-8
 
-ENV LANG en_US.UTF-8  
-
-## Colors and italics for tmux
-# https://github.com/tmux/tmux/blob/310f0a960ca64fa3809545badc629c0c166c6cd2/FAQ#L355-L383
-# https://medium.com/@dubistkomisch/how-to-actually-get-italics-and-true-colour-to-work-in-iterm-tmux-vim-9ebe55ebc2be
-COPY tmux/xterm-256color-italic.terminfo /root
-COPY tmux/tmux-256color.terminfo /root
-RUN tic -x /root/xterm-256color-italic.terminfo
-RUN tic -x /root/tmux-256color.terminfo
-ENV TERM=xterm-256color-italic
+ENV LANG en_US.UTF-8
 
 ## Common packages
 RUN apt-get update && apt-get install -y \
@@ -46,7 +37,7 @@ RUN apt-get update && apt-get install -y \
       tmux \
       tzdata \
       wget \
-      zsh 
+      zsh
 
 RUN chsh -s /usr/bin/zsh
 
@@ -71,16 +62,6 @@ RUN chmod +x /usr/local/bin/docker-compose
 ## Install Fzf
 RUN git clone --depth 1 https://github.com/junegunn/fzf.git /root/.fzf && /root/.fzf/install
 
-## Install Tmux
-# https://github.com/tmux/tmux/releases/tag/2.8
-WORKDIR /usr/local/src
-RUN wget https://github.com/tmux/tmux/releases/download/2.8/tmux-2.8.tar.gz
-RUN tar xzvf tmux-2.8.tar.gz
-WORKDIR /usr/local/src/tmux-2.8
-RUN ./configure
-RUN make 
-RUN make install
-RUN rm -rf /usr/local/src/tmux*
 
 ## Install Neovim Neccessary
 # https://github.com/thornycrackers/docker-neovim/blob/master/Dockerfile
@@ -107,7 +88,7 @@ RUN apt-get update && apt-get install -y \
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8      
+ENV LC_ALL en_US.UTF-8
 
 ## Install Neovim
 RUN add-apt-repository ppa:neovim-ppa/stable
@@ -133,6 +114,12 @@ RUN cd /opt && pip2 install -r py2_requirements.txt
 
 COPY py3_requirements.txt /opt/py3_requirements.txt
 RUN cd /opt && pip3 install -r py3_requirements.txt
+
+## Install SSH
+RUN apt-get update && apt-get install -y \
+    openssh-server \
+    mosh
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
 
 ########################################
@@ -165,7 +152,7 @@ RUN nvim -i NONE -c PlugInstall -c quitall > /dev/null 2>&1
 # https://vi.stackexchange.com/a/5413
 RUN cd /root/.config/nvim/plugged/YouCompleteMe && python3 install.py --ts-completer
 
-# RUN cd /root/.nvim/plugged/YouCompleteMe && ./install.py 
+# RUN cd /root/.nvim/plugged/YouCompleteMe && ./install.py
 
 # Add flake8 config, don't trigger a long build process
 COPY dotfiles/flake8 /root/.flake8
@@ -182,4 +169,26 @@ COPY configs/rc.conf /root/.config/ranger/rc.conf
 # editorconfig
 COPY dotfiles/editorconfig /root/.editorconfig
 
-CMD ["zsh"]
+# SSH Config
+COPY configs/sshd_config /etc/ssh/sshd_config
+
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
+
+COPY tmux/tmux.conf /root/.tmux/.tmux.conf
+
+## Colors and italics for tmux
+# https://github.com/tmux/tmux/blob/310f0a960ca64fa3809545badc629c0c166c6cd2/FAQ#L355-L383
+# https://medium.com/@dubistkomisch/how-to-actually-get-italics-and-true-colour-to-work-in-iterm-tmux-vim-9ebe55ebc2be
+COPY tmux/xterm-256color-italic.terminfo /root
+COPY tmux/tmux-256color.terminfo /root
+RUN tic -x /root/xterm-256color-italic.terminfo
+RUN tic -x /root/tmux-256color.terminfo
+ENV TERM xterm-256color-italic
+
+#       ssh    mosh
+EXPOSE 62222 60001/udp
+
+# ENTRYPOINT ["bash", "/usr/local/bin/start.sh"]
+# CMD ["zsh"]
+ENTRYPOINT /usr/local/bin/start.sh && zsh

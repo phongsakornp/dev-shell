@@ -6,3 +6,7 @@
 
 ### Run Docker
 docker run -it --rm phongsakornp/shell
+docker run -it -p 62222:62222 -p 60001:60001/udp phongsakornp/shell
+
+### Mosh
+mosh --ssh="ssh -p 62222" -- root@192.168.1.42
