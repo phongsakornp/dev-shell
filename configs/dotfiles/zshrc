@@ -15,6 +15,17 @@ export EDITOR="$VISUAL"
 # fzf for a file path search
 export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
 
+
+# Plugins
+
+plugins=(git gitignore zsh-syntax-highlighting colorize tmux docker yarn zsh-autosuggestions)
+
+ZSH_TMUX_AUTOSTART=true
+
+if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
+  exec tmux
+fi
+
 # A few useful aliases
 alias awk1="awk '{print \$1}'"
 alias awk2="awk '{print \$2}'"
